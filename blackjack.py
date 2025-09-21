@@ -21,3 +21,6 @@ def insert_money(amount_player):
         player_list[i].append(money)
 amount_player = user_input()
 insert_money(amount_player)
+
+def random_card():
+    
