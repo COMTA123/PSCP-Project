@@ -1,1 +1,0 @@
-check_action(player_action)
