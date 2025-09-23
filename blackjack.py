@@ -72,24 +72,24 @@ def check_action(act):
         act = str(input("เลือก Action ไม่ถูกต้อง เลือกใหม่ : ")).lower()
     return act
 def check_score():
-    """ยังทำไม่เสร็จ"""
-    for i in range(0,amount_player+1):
-        for j in player_list[i][3:]:
+    """นับคะแนนเข้า playerlistช่อง 1"""
+    for i in range(0,amount_player+1): #Loop รวมบอทด้วย
+        for j in player_list[i][3:]: #ให้เริ่มจากช่องที่ 3 เพราะ 0 1 2 ไม่ใช่การ์ด
             print(f"J : {j}")
-            point = j.split("_")[0]
-            if point in "JKQ":
+            point = j.split("_")[0] #แยกระหว่างตัวเลขกับชนิดไพ่
+            if point in "JKQ": #เช็คว่า point เป็นตัวอักษรรึป่าว
                 point = 10
-            elif point == "A":
-                a_select = int(input("11 or 1 : "))
+            elif point == "A": 
+                a_select = int(input("11 or 1 : ")) #ให้เลือกว่า A จะกี่แต้ม
                 while a_select != 11 and a_select != 1:
                     a_select = int(input("กรอกผิด กรุณากรอกใหม่"))
                 if a_select == 11:
                     point = 11
                 elif a_select == 1:
                     point = 1
-            player_list[i][1] += int(point)
-            print(f"---{point}---")
-            print(player_list)
+            player_list[i][1] += int(point) #บวกแต้มเข้าใน playerlist
+
+
 amount_player = user_input()
 insert_money(amount_player)
 deal_cards()
