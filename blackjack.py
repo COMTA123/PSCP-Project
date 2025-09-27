@@ -5,6 +5,7 @@ card_list =["AS", "2S", "3S", "4S", "5S", "6S", "7S", "8S", "9S", "10S", "JS", "
 "AD", "2D", "3D", "4D", "5D", "6D", "7D", "8D", "9D", "10D", "JD", "QD", "KD",
 "AC", "2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "10C", "JC", "QC", "KC"]
 player_list = [[10000,0,0]]
+
 def user_input():
     """รับจำนวน Player และก็รับจำนวนเงินที่จะเล่น"""
     amount_player = int(input()) #รับค่าจำนวนคนเล่น
@@ -17,6 +18,7 @@ def user_input():
         player_list.append([start_money])
         player_list[i].append(0)
     return amount_player #ให้ส่งจำนวนผู้เล่นออกมานอก function
+
 def insert_money(amount_player):
     """ฟังชันให้ผู้เล่นเลือกลงจำนวนเงิน"""
     for i in range(1,amount_player+1): #loop ตามจำนวน Player
@@ -42,57 +44,59 @@ def deal_cards():
         random_card2 = random.sample(card_list,1)[0]#สุ่มใบสอง
         player_list[i].append(random_card2)#เพิ่มการ์ด
         card_list.remove(random_card2)#ลบออก
-
 def action():
     """Player Select Action"""
-    print(card_list)
-    for i in range(1,amount_player+1): #loop ตาม player
-        player_action = str(input(f"เลือก Action player{i} : ")).lower() #รับinput action
+    for k in range(1,amount_player+1): #loop ตาม player
+        print(f"your card : {player_list[k][3:]}")
+        player_action = str(input(f"เลือก Action player{k} : ")).lower() #รับinput action
         player_action = check_action(player_action) #เข้าฟังชันเช็คว่า input ถูกไหม
         match player_action:
             case "hit": #ถ้าเลือก Hit
                 random_card_hit = random.sample(card_list,1)[0] #สุ่มการ์ดเพิ่ม
-                player_list[i].append(random_card_hit) #เพิ่มการ์ดเข้าplayerlist
+                player_list[k].append(random_card_hit) #เพิ่มการ์ดเข้าplayerlist
                 card_list.remove(random_card_hit) #ลบการออก card list
-                player_action = str(input(f"เลือก Action player{i} : ")).lower() #รับinputอีกครั้ง
-                player_action = check_action(player_action) #เข้าฟังชันเช็ค
+                if check_score(k) > 21:
+                    print("แตกกกก")
+                    player_action = "stand"
                 while player_action == "hit":
                     """ทำซ้ำไปเรื่อยๆหากจนกว่าจะไม่เลือก hit"""
+                    player_action = str(input(f"เลือก Action player{k} : ")).lower() #รับinputอีกครั้ง
+                    player_action = check_action(player_action) #เข้าฟังชันเช็ค
                     random_card_hit = random.sample(card_list,1)[0]
-                    player_list[i].append(random_card_hit)
+                    player_list[k].append(random_card_hit)
                     card_list.remove(random_card_hit)
-                    player_action = str(input(f"เลือก Action player{i} : ")).lower()
-                    player_action = check_action(player_action)
+                    if check_score(k) > 21:
+                        print("แตกกกก")
+                        player_action = "stand"
             case "stand":
                 """ไม่ทำไรเลย"""
                 pass
+
 def check_action(act):
     """เช็คว่าinput action ถูกไหม"""
     while act != "hit" and act != "stand":
         act = str(input("เลือก Action ไม่ถูกต้อง เลือกใหม่ : ")).lower()
     return act
-def check_score():
-    """นับคะแนนเข้า playerlistช่อง 1"""
-    for i in range(0,amount_player+1): #Loop รวมบอทด้วย
-        for j in player_list[i][3:]: #ให้เริ่มจากช่องที่ 3 เพราะ 0 1 2 ไม่ใช่การ์ด
-            print(f"J : {j}")
-            point = j.split("_")[0] #แยกระหว่างตัวเลขกับชนิดไพ่
-            if point in "JKQ": #เช็คว่า point เป็นตัวอักษรรึป่าว
-                point = 10
-            elif point == "A": 
-                a_select = int(input("11 or 1 : ")) #ให้เลือกว่า A จะกี่แต้ม
-                while a_select != 11 and a_select != 1:
-                    a_select = int(input("กรอกผิด กรุณากรอกใหม่"))
-                if a_select == 11:
-                    point = 11
-                elif a_select == 1:
-                    point = 1
-            player_list[i][1] += int(point) #บวกแต้มเข้าใน playerlist
 
+def check_score(i):
+    """รับค่าตำแหน่ง player ที่ต้องการเช็คเข้ามา"""
+    for j in player_list[i][3:]: #ให้เริ่มจากช่องที่ 3 เพราะ 0 1 2 ไม่ใช่การ์ด
+        print(f"Your card : {j}")
+        point = j.split("_")[0] #แยกระหว่างตัวเลขกับชนิดไพ่
+        if point in "JKQ": #เช็คว่า point เป็นตัวอักษรรึป่าว
+            point = 10
+        elif point == "A": 
+            a_select = int(input("11 or 1 : ")) #ให้เลือกว่า A จะกี่แต้ม
+            while a_select != 11 and a_select != 1:
+                a_select = int(input("กรอกผิด กรุณากรอกใหม่"))
+            if a_select == 11:
+                point = 11
+            elif a_select == 1:
+                point = 1
+        player_list[i][1] += int(point) #บวกแต้มเข้าใน playerlist
+    return player_list[i][1]
 
 amount_player = user_input()
 insert_money(amount_player)
 deal_cards()
 action()
-check_score()
-
