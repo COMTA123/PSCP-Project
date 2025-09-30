@@ -4,11 +4,11 @@ player_list = [[10000,0,0]]
 
 def user_input():
     """รับจำนวน Player และก็รับจำนวนเงินที่จะเล่น"""
-    amount_player = int(input("กรอกจำนวนผู้เล่น : ")) #รับค่าจำนวนคนเล่น
+    amount_player = int(input("Enter number of players: ")) #รับค่าจำนวนคนเล่น
 
     while amount_player <= 0 or amount_player > 3: #เช็คให้ไม่เกิน 3 และมากกว่า 0
-        print("กรอกจำนวนผู้เล่นผิด")
-        amount_player = int(input("กรอกใหม่อีกครั้ง"))
+        print("Invalid number of players.")
+        amount_player = int(input("Enter again: "))
 
     for i in range(1,amount_player+1): #loop ตามจำนวน Player
         """รับเงินที่คนจะเล่นโดย ตำแหน่งที่ 0 เป็นของบอท เราเลยเริ่มตำแหน่งที่ 1"""
@@ -22,12 +22,13 @@ def insert_money(amount_player):
     """ฟังชันให้ผู้เล่นเลือกลงจำนวนเงิน"""
 
     for i in range(1,amount_player+1): #loop ตามจำนวน Player
-        money = int(input(f"Player{i} ใส่จำนวนเงินที่จะลงในตานี้ : "))
-
+        money = int(input(f"Player {i}, enter your bet: "))
         while money > player_list[i][0] or money <= 0: #เช็คว่าใส่เงินมากกว่าที่มีรึป่าว หรือ ใส่เงินน้อยกว่า 0 รึป่าว
-            money = int(input("กรอกจำนวนเงินผิด"))
-
-        player_list[i].append(money) #เพิ่ม money เข้าไปใน playerlist ในช่องplayer i
+            money = int(input("Invalid bet. Enter again: "))
+        if not index:   
+            player_list[i].append(money) #เพิ่ม money เข้าไปใน playerlist ในช่องplayer i
+        else: 
+            player_list[i][2] = money
 
 def deal_cards():
     """randomCard 2 ใบ"""
@@ -80,9 +81,9 @@ def action():
     """Player Select Action"""
     for k in range(1,amount_player+1): #loop ตาม player
         print(f"\n---------Player {k}'s Turn------------")
-        print(f"Bot card is : {player_list[0][3:]}")
+        print(f"Bot cards: {player_list[0][3:]}")
         show_point(k)
-        player_action = str(input(f"เลือก Action player{k} : ")).lower() #รับinput action
+        player_action = str(input(f"\nChoose action for Player {k} (hit/stand): ")).lower() #รับinput action
         player_action = check_action(player_action) #เข้าฟังชันเช็คว่า input ถูกไหม
 
         match player_action:
@@ -90,13 +91,13 @@ def action():
 
                 random_card(k)
                 if check_score(k) > 21:
-                    print("Your are Busted")
+                    print("You are Busted!")
                     player_action = "stand"
                     pass
 
                 while player_action == "hit":
                     """ทำซ้ำไปเรื่อยๆหากจนกว่าจะไม่เลือก hit"""
-                    player_action = str(input(f"เลือก Action player{k} : ")).lower() #รับinputอีกครั้ง
+                    player_action = str(input(f"\nChoose action for Player {k} (hit/stand): ")).lower() #รับinputอีกครั้ง
                     player_action = check_action(player_action) #เข้าฟังชันเช็ค
 
                     if player_action == "stand":
@@ -104,7 +105,7 @@ def action():
 
                     random_card(k)
                     if check_score(k) > 21:
-                        print("Your are Busted")
+                        print("You are Busted!")
                         player_action = "stand"
                         break
             case "stand":
@@ -112,8 +113,8 @@ def action():
                 pass
 
 def show_point(i):
-    print(f"your card : {player_list[i][3:]}")
-    print(f"Your point is : {check_score(i)}")
+    print(f"Your cards: {player_list[i][3:]}")
+    print(f"Your total points: {check_score(i)}")
 
 def random_card(i):
     """สุ่มการ์ดเพิ่ม"""
@@ -121,14 +122,14 @@ def random_card(i):
     player_list[i].append(card)
     card_list.remove(card)
     show_point(i)
-    print(f"Got! : {card}")
+    print(f"New card: {card}")
 
 
 def check_action(act):
     """เช็คว่าinput action ถูกไหม"""
 
     while act != "hit" and act != "stand":
-        act = str(input("เลือก Action ไม่ถูกต้อง เลือกใหม่ : ")).lower()
+        act = str(input("Invalid action. Enter again (hit/stand): ")).lower()
 
     return act
 
@@ -149,6 +150,7 @@ def check_score(i):
         else:
             ace += 1
             total += 11
+
     while total > 21 and ace > 0:
         total -= 10
         ace -= 1
@@ -159,33 +161,60 @@ def summarize():
     """วัดผลแพ้ชนะ"""
     bot_point = bot_check()
     for j in range(1,amount_player+1):
-        print(f"\n---------Player {j} ------------")
-        print(f"Bot Point : {bot_point}")
+        print(f"\n{f'Player {j}':-^40}")
+        print(f"{f"Bot Points: {bot_point}":^40}")
         show_point(j)
         player_point = check_score(j)
 
         if player_point > 21:  # Player bust
-            print(f"Player {j} : Losttt")
+            print(f"Player {j} : Lost")
             player_list[j][0] -= player_list[j][2]
 
         elif bot_point > 21:  # Bot bust -> player auto win
-            print(f"Player {j} : WINNN")
+            print(f"Player {j} : Win")
             player_list[j][0] += player_list[j][2]* 2
 
         elif player_point > bot_point:  # Player closer to 21
-            print(f"Player {j} : WINNN")
+            print(f"Player {j} : Win")
             player_list[j][0] += player_list[j][2]* 2
 
         elif player_point < bot_point:  # Bot closer
-            print(f"Player {j} : Losttt")
+            print(f"Player {j} : Lost")
             player_list[j][0] -= player_list[j][2]
 
         else: # player_point == bot_point
             print(f"Player {j} : Draw")
 
+index = 0
 amount_player = user_input()
 insert_money(amount_player)
 deal_cards()
 action()
 bot_turn()
 summarize()
+
+loop = input("Play again? yes/no: ").lower()
+while loop != "yes" and loop != "no":
+    print("Invalid input. Enter yes/no.")
+    loop = input("Play again? yes/no : ").lower()
+while loop == "yes":
+    index += 1
+    for i in range(0,amount_player+1):
+        del player_list[i][3:]
+        if i:
+            print(f"Player {i}'s Balance: {player_list[i][0]}")
+    insert_money(amount_player)
+    deal_cards()
+    action()
+    bot_turn()
+    summarize()
+    loop = input("Play again? yes/no : ").lower()
+    while loop != "yes" and loop != "no":
+        print("Invalid input. Enter yes/no.")
+        loop = input("Play again? yes/no : ").lower()
+
+for i in range(1,amount_player+1):
+    print("\n")
+    print(f"{'-----------Thank you for playing------------':^40}")
+    print(f"{f'Player {i}':^40}")
+    print(f"Your final balance is: {player_list[i][0]}")
