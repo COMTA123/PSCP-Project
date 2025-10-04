@@ -5,7 +5,7 @@ players = [[10000,0,0]]
 def get_num_players():
     """รับจำนวน Player และก็รับจำนวนเงินที่จะเล่น"""
     num = True
-    while num:
+    while num: #ดัก Input ผิด
         try:
             num_players = int(input("Enter number of players: ")) #รับค่าจำนวนคนเล่น
             while num_players <= 0 or num_players > 3: #เช็คให้ไม่เกิน 3 และมากกว่า 0
@@ -31,7 +31,7 @@ def place_bets(num_players):
             continue
 
         bet = True
-        while bet:
+        while bet: #ดัก Input ผิด
             try:
                 bet_amount = int(input(f"Player {pid}, enter your bet: "))
                 while bet_amount > players[pid][0] or bet_amount <= 0: #เช็คว่าใส่เงินมากกว่าที่มีรึป่าว หรือ ใส่เงินน้อยกว่า 0 รึป่าว
@@ -66,6 +66,70 @@ def deal_starting_cards():
         players[i].append(card2)#เพิ่มการ์ด
         deck.remove(card2)#ลบออก
 
+def player_turns():
+    """Player Select Action"""
+    for pid in range(1,num_players+1): #loop ตาม player pid = player id
+
+        if players[pid][0] <= 0:
+            continue
+
+        print(f"\n{'Player ' + str(pid) + '\'s Turn':-^40}")
+        print(f"Bot cards: {players[0][3]} XX")
+        show_hand(pid)
+        player_action = str(input(f"\nChoose action for Player {pid} (hit/stand): ")).lower() #รับinput action
+        player_action = validate_action(player_action) #เข้าฟังชันเช็คว่า input ถูกไหม
+
+        match player_action:
+
+            case "hit": #ถ้าเลือก Hit
+                draw_card(pid) #จั่วการ์ด
+
+                if calculate_score(pid) > 21: #เช็คว่า bust ไหม
+                    print("You are Busted!")
+                    player_action = "stand"
+                    continue
+
+                while player_action == "hit": #เช็คว่าเลือก hit ต่อไหม
+                    """ทำซ้ำไปเรื่อยๆหากจนกว่าจะไม่เลือก hit"""
+                    player_action = str(input(f"\nChoose action for Player {pid} (hit/stand): ")).lower() #รับinputอีกครั้ง
+                    player_action = validate_action(player_action) #เข้าฟังชันเช็ค
+
+                    if player_action == "stand": #ถ้า hit แล้ว stand ก็จบเลย
+                        break
+
+                    draw_card(pid)#ถ้าไม่ stand ก็ให้จั่ว
+
+                    if calculate_score(pid) > 21:#เช็คว่า bust ไหม
+                        print("You are Busted!")
+                        player_action = "stand"
+                        break
+
+            case "stand": #ถ้า stand ก็ข้ามเลย
+                """ไม่ทำไรเลย"""
+                continue
+
+def show_hand(i):
+    """เปิดการ์ดบนมือและก็คะแนนตอนนั้น"""
+    print(f"Your cards: {players[i][3:]}")
+    print(f"Your total points: {calculate_score(i)}")
+
+def draw_card(i):
+    """สุ่มการ์ดเพิ่ม และโชว์การ์ดที่ได้"""
+    card = random.sample(deck,1)[0] #สุ่ม
+    players[i].append(card) #เพิ่ม
+    deck.remove(card) #ลบ
+    show_hand(i) #โชว์
+    print(f"New card: {card}") #โชว์
+
+
+def validate_action(act):
+    """เช็คว่าinput action ถูกไหม"""
+
+    while act != "hit" and act != "stand":
+        act = str(input("Invalid action. Enter again (hit/stand): ")).lower() 
+
+    return act
+
 def calculate_bot_score():
     """คิดคะแนนให้บอท"""
     score_total = 0
@@ -97,65 +161,6 @@ def bot_draw_until_safe():
         deck.remove(bot_new_card) #ลบออกจากdeck เพื่อไม่ให้ซ้ำ
         players[0].append(bot_new_card) #เพิ่มเข้า list players
 
-def player_turns():
-    """Player Select Action"""
-    for pid in range(1,num_players+1): #loop ตาม player pid = player id
-        if players[pid][0] <= 0:
-            continue
-        print(f"\n{'Player ' + str(pid) + '\'s Turn':-^40}")
-        print(f"Bot cards: {players[0][3]} XX")
-        show_hand(pid)
-        player_action = str(input(f"\nChoose action for Player {pid} (hit/stand): ")).lower() #รับinput action
-        player_action = validate_action(player_action) #เข้าฟังชันเช็คว่า input ถูกไหม
-
-        match player_action:
-            case "hit": #ถ้าเลือก Hit
-                draw_card(pid) #จั่วการ์ด
-
-                if calculate_score(pid) > 21: #เช็คว่า bust ไหม
-                    print("You are Busted!")
-                    player_action = "stand"
-                    pass
-
-                while player_action == "hit": #เช็คว่าเลือก hit ต่อไหม
-                    """ทำซ้ำไปเรื่อยๆหากจนกว่าจะไม่เลือก hit"""
-                    player_action = str(input(f"\nChoose action for Player {pid} (hit/stand): ")).lower() #รับinputอีกครั้ง
-                    player_action = validate_action(player_action) #เข้าฟังชันเช็ค
-
-                    if player_action == "stand": #ถ้า hit แล้ว stand ก็จบเลย
-                        break
-
-                    draw_card(pid)#ถ้าไม่ stand ก็ให้จั่ว
-                    if calculate_score(pid) > 21:#เช็คว่า bust ไหม
-                        print("You are Busted!")
-                        player_action = "stand"
-                        break
-            case "stand": #ถ้า stand ก็ข้ามเลย
-                """ไม่ทำไรเลย"""
-                continue
-
-def show_hand(i):
-    """เปิดการ์ดบนมือและก็คะแนนตอนนั้น"""
-    print(f"Your cards: {players[i][3:]}")
-    print(f"Your total points: {calculate_score(i)}")
-
-def draw_card(i):
-    """สุ่มการ์ดเพิ่ม และโชว์การ์ดที่ได้"""
-    card = random.sample(deck,1)[0] #สุ่ม
-    players[i].append(card) #เพิ่ม
-    deck.remove(card) #ลบ
-    show_hand(i) #โชว์
-    print(f"New card: {card}") #โชว์
-
-
-def validate_action(act):
-    """เช็คว่าinput action ถูกไหม"""
-
-    while act != "hit" and act != "stand":
-        act = str(input("Invalid action. Enter again (hit/stand): ")).lower() 
-
-    return act
-
 def calculate_score(i):
     """รับค่าตำแหน่ง player ที่ต้องการเช็คเข้ามา"""
     score_total = 0
@@ -184,10 +189,13 @@ def summarize_results():
     """วัดผลแพ้ชนะ"""
     lost_count = 0
     bot_point = calculate_bot_score() #เก็บค่าแต้มบอท
+
     for pid in range(1,num_players+1): #loopตาม จำนวนplayer
+
         if players[pid][0] <= 0:
             lost_count += 1
             continue
+
         print(f"\n{f'Player {pid}':-^40}") 
         print(f"{f"Bot Points: {bot_point}":^40}")
         show_hand(pid) #เปิดการ์ดให้ดู
@@ -213,10 +221,13 @@ def summarize_results():
 
         else: # player_point == bot_point
             print(f"Player {pid} : Draw")
+
     if lost_count == num_players:
         print("All players are out of money. Game over!")
         return True
+
     return False
+
 """รันเกม"""
 index = 0
 num_players = get_num_players() 
@@ -241,6 +252,7 @@ while play_again == "yes":
 
     for idx in range(0,num_players+1): # idx = index
         del players[idx][3:]
+
         if idx: #ถ้าผ่านไปแล้วรอบนึง
             print(f"Player {idx}'s Balance: {players[idx][0]}")
 
@@ -251,8 +263,10 @@ while play_again == "yes":
     player_turns()
     bot_draw_until_safe()
     all_lost = summarize_results()
-    if all_lost:
+
+    if all_lost: #ถ้าทุกคนแพ้แล้วบังคับเลิกเล่น
         break
+
     play_again = input("Play again? yes/no : ").lower()
 
     """รับค่าว่าเล่นต่อไหมเช็คว่าผิดไหม"""
@@ -260,8 +274,8 @@ while play_again == "yes":
         print("Invalid input. Enter yes/no.")
         play_again = input("Play again? yes/no : ").lower()
 
+"""เลิกเล่นแล้วปริ้นคำขอบคุณและสรุปผล"""
 for idx in range(1,num_players+1):
-    """เลิกเล่นแล้วปริ้นคำขอบคุณและสรุปผล"""
     print("\n")
     print(f"{'Thank you for playing':-^40}")
     print(f"{f'Player {idx}':^40}")
